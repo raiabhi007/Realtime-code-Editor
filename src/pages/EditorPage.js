@@ -88,7 +88,7 @@ if(!location.state){
         <button className='btn leaveBtn'>Leave</button>
       </div>
       <div className='editorwrap'>
-        <Editor/>
+        <Editor socketRef={socketRef} roomId={roomId}/>
       </div>
     </div>
   )
