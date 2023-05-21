@@ -19,44 +19,52 @@ const EditorPage = () => {
     const reactNavigator = useNavigate();
     const [clients, setClients] = useState([]);
 
+
     useEffect(() => {
+        //Socket ko initialize krega agar socket me koi bhi error aaya to show kr dega
         const init = async () => {
             socketRef.current = await initSocket();
             socketRef.current.on('connect_error', (err) => handleErrors(err));
             socketRef.current.on('connect_failed', (err) => handleErrors(err));
-
+            //Agar koi error aayegi to usko handle krega 
             function handleErrors(e) {
                 console.log('socket error', e);
                 toast.error('Socket connection failed, try again later.');
                 reactNavigator('/');
             }
-
+            // Server pe request bheja join krne ke liye
             socketRef.current.emit(ACTIONS.JOIN, {
                 roomId,
                 username: location.state?.username,
             });
 
-            // Listening for joined event
+            // Listening for joined event(ACTION>JOINED) 
+            //Jo data mila h usko destructure krke le rhe h
             socketRef.current.on(
                 ACTIONS.JOINED,
                 ({ clients, username, socketId }) => {
+                    // jo join kr rha h usko chodkar sbko notify krna h
                     if (username !== location.state?.username) {
                         toast.success(`${username} joined the room.`);
                         console.log(`${username} joined`);
                     }
-                    setClients(clients);
-                    socketRef.current.emit(ACTIONS.SYNC_CODE, {
+                    
+                    setClients(clients); //clients ke andar saari list ko push kr rhe h 
+
+ // jo naya client join hoga uske editor pe jo data phle se usko paste kr dega ya send kr dega
+                     socketRef.current.emit(ACTIONS.SYNC_CODE, {
                         code: codeRef.current,
                         socketId,
                     });
                 }
             );
 
-            // Listening for disconnected
+            // Listening for disconnected (ACTION.DISCONNECTED)
             socketRef.current.on(
                 ACTIONS.DISCONNECTED,
                 ({ socketId, username }) => {
                     toast.success(`${username} left the room.`);
+                    //clients ki list me se jo client leave hua h usko hta denge   
                     setClients((prev) => {
                         return prev.filter(
                             (client) => client.socketId !== socketId
@@ -66,6 +74,7 @@ const EditorPage = () => {
             );
         };
         init();
+        // ye function listener ko clear krta h agar listener clear ni kro to memory leak ka problem ho skta h
         return () => {
             socketRef.current.disconnect();
             socketRef.current.off(ACTIONS.JOINED);
@@ -75,6 +84,7 @@ const EditorPage = () => {
 
     async function copyRoomId() {
         try {
+            //navigator ek global function h jo globally available h jisse camera video clipboard ke bht saare operations perform kr skte h
             await navigator.clipboard.writeText(roomId);
             toast.success('Room ID has been copied to your clipboard');
         } catch (err) {
