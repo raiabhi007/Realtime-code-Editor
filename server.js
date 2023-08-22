@@ -30,6 +30,7 @@ function getAllConnectedClients(roomId) {
 }
 
 
+
 // EditorPage(client) se jo request aayegi usko listen krega
 io.on('connection', (socket) => {
     console.log('socket connected', socket.id);
@@ -49,16 +50,20 @@ io.on('connection', (socket) => {
         });
     });
 
+
+    
     //Editor pe jb code change hoga tb server pe ek request aayegi aur server same roomID ko changed code send kr dega.
     socket.on(ACTIONS.CODE_CHANGE, ({ roomId, code }) => {
         //io.to agar socket.in ki jagah use krenge to request sbko jayegi typr krne walo ki bhi lekin socket.in me type krne wale ko chodkar sbko jayegi jo us room me available h
         socket.in(roomId).emit(ACTIONS.CODE_CHANGE, { code });
     });
+
     
     //jb koi new user aayega to code ko sync krne ke liye ye event response bheja jayega 
     socket.on(ACTIONS.SYNC_CODE, ({ socketId, code }) => {
         io.to(socketId).emit(ACTIONS.CODE_CHANGE, { code });
     });
+
 
     // ye tbhi run hoga jb koi brower band krta h ya leave krta h mtlb client disconnect krta h
     socket.on('disconnecting', () => {
@@ -78,6 +83,8 @@ io.on('connection', (socket) => {
         socket.leave();
     });
 });
+
+
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => console.log(`Listening on port ${PORT}`));

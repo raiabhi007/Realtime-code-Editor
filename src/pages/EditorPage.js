@@ -33,6 +33,8 @@ const EditorPage = () => {
                 reactNavigator('/');
             }
             // Server pe request bheja join krne ke liye
+            //socketRef ek useRef h isme current object rhta h sirf socketRef ke current object me socket connection ko intialize kiya h
+            //current.emit krne se socket ke server pe request jayegi
             socketRef.current.emit(ACTIONS.JOIN, {
                 roomId,
                 username: location.state?.username,
